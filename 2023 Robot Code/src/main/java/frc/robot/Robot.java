@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -19,6 +20,8 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private RobotDrivetrain drivetrain = new RobotDrivetrain();
+  private XboxController controller0 = new XboxController(0);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -78,7 +81,34 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    //D-pad functionality works regardless of drive type chosen
+    
+    //Tank Drive
+    //Need y-axis for each stick
+    //Hand.kLeft gives the left analog stick and Hand.kRight gives the right analog stick
+    //Speeds are currently set at 50%
+    //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
+    
+    //Curvature Drive  
+    double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
+    double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
+    double turn = controller0.getLeftX(); //gets the direction from the left analog stick
+    
+    if (fSpeed > 0){
+      drivetrain.curvatureDrive(fSpeed, -1*turn);
+    }
+    else if (rSpeed > 0){
+      drivetrain.curvatureDrive(-1*rSpeed, -1*turn);
+    }
+    else{
+      drivetrain.curvatureDrive(0,0);
+    }    
+    
+    //D-Pad controls for fine movements
+    int dPad = controller0.getPOV(); //scans to see which directional arrow is being pushed
+    drivetrain.dPadGetter(dPad);
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
