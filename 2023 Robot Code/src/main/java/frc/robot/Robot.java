@@ -56,28 +56,49 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+    drivetrain.setEncoderReset();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
+    drivetrain.encoderInfo();
+  if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
+    drivetrain.curvatureDrive(0.15, 0);
+  }
+  else{
+      drivetrain.curvatureDrive(0, 0);
+      drivetrain.setEncoderReset();
+    if (drivetrain.getLeftEncoderPosition() >= -20 && drivetrain.getRightEncoderPosition() <= 20){
+      drivetrain.dPadGetter(270);
+      drivetrain.setEncoderReset();
+    }
+    else{
+      drivetrain.curvatureDrive(0,0);
+      if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
+        drivetrain.curvatureDrive(0.15, 0);
+     }
+     else{
+        drivetrain.curvatureDrive(0, 0);
+     }
     }
   }
+  
+    
+    /*if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
+	    drivetrain.curvatureDrive(0.15, 0);
+    }
+    else
+	    drivetrain.curvatureDrive(0, 0);
+*/
+  }
+
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    drivetrain.setEncoderReset();
+  }
 
   /** This function is called periodically during operator control. */
   @Override
@@ -89,7 +110,7 @@ public class Robot extends TimedRobot {
     //Hand.kLeft gives the left analog stick and Hand.kRight gives the right analog stick
     //Speeds are currently set at 50%
     //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
-    
+    drivetrain.encoderInfo();
     //Curvature Drive  
     double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
     double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger

@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 */
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 //The goal of this class is to create methods that can be used to operate the robot's drivetrain.
@@ -25,6 +27,15 @@ public class RobotDrivetrain {
   private CANSparkMax leftRear = new CANSparkMax(1, MotorType.kBrushless);
   private CANSparkMax rightFront = new CANSparkMax(3, MotorType.kBrushless);
   private CANSparkMax rightRear = new CANSparkMax(4, MotorType.kBrushless);
+
+  /*
+   * Returns an object for interfacing with the hall sensor integrated into a brushless motor, which is connected to the 
+   * front port of the SPARK MAX.
+  */
+  private RelativeEncoder encoderLeft = leftFront.getEncoder();
+  private RelativeEncoder encoderRight = rightFront.getEncoder();
+
+
   
   //Groups left side speed controllers together and right side speed controllers together
   //This is cleaner than setting up two different differential drives
@@ -92,4 +103,44 @@ public class RobotDrivetrain {
       robotDrive.tankDrive(-0.2, 0.2); //left
     }
   } 
+  
+  
+  public void encoderInfo(){
+    SmartDashboard.putNumber("Encoder Position Left", encoderLeft.getPosition());
+    SmartDashboard.putNumber("Encoder Position Right", encoderRight.getPosition());
+    SmartDashboard.putNumber("Encoder Velocity Left", encoderLeft.getVelocity());
+    SmartDashboard.putNumber("Encoder Velocity Right", encoderRight.getVelocity());
+  }
+  public void setEncoderReset(){
+    encoderLeft.setPosition(0);
+    encoderRight.setPosition(0);
+  }
+  public double getLeftEncoderPosition(){
+    return encoderLeft.getPosition();
+  }
+  public double getRightEncoderPosition(){
+    return encoderRight.getPosition();
+  }
+  
+  /*public void encoderAutonomousStart(){
+    setEncoderReset();
+  if (getLeftEncoderPosition() <= 62 && getRightEncoderPosition() <= 62){
+    curvatureDrive(0.15, 0);
+  }
+  else
+    curvatureDrive(0, 0);
+  setEncoderReset();
+  if (getLeftEncoderPosition() >= -20 && getRightEncoderPosition() <= 20){
+  dPadGetter(270);
+  }
+  else
+    curvatureDrive(0,0);
+  setEncoderReset();
+  
+  if (getLeftEncoderPosition() <= 62 && getRightEncoderPosition() <= 62){
+    curvatureDrive(0.15, 0);
+  }
+  else
+    curvatureDrive(0, 0);
+}*/
 }
