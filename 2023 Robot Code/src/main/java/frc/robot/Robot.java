@@ -60,29 +60,47 @@ public class Robot extends TimedRobot {
   }
 
   /** This function is called periodically during autonomous. */
+  
+  //Distance in inches to revolutions for neo motor
+  public double distToRevs(double distance){
+    double revolutions = 0.552*distance - 4.41;
+    return revolutions;
+
+  }
   @Override
   public void autonomousPeriodic() {
+    
+    //Made it so only distance needs to be changed to go foward or backwards.
+    double distance = -60;
+    double speed = 0.15;
     drivetrain.encoderInfo();
-  if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
-    drivetrain.curvatureDrive(0.15, 0);
+    
+  if (distance > 0 && drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
+    drivetrain.curvatureDrive(speed, 0);
   }
-  else{
+  else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
+    drivetrain.curvatureDrive(-1 * speed, 0);
+  }
+
+  //FIX THIS DOM
+  //YOUR CODE IS DUMB!!!!!
+  //BE BETTER
+  //THIS IS WHY I'M STEALING YOUR JOB!
+  /*else{
       drivetrain.curvatureDrive(0, 0);
-      drivetrain.setEncoderReset();
     if (drivetrain.getLeftEncoderPosition() >= -20 && drivetrain.getRightEncoderPosition() <= 20){
       drivetrain.dPadGetter(270);
-      drivetrain.setEncoderReset();
     }
     else{
       drivetrain.curvatureDrive(0,0);
-      if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
-        drivetrain.curvatureDrive(0.15, 0);
+      if (drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
+        drivetrain.curvatureDrive(speed, 0);
      }
      else{
         drivetrain.curvatureDrive(0, 0);
      }
     }
-  }
+  }*/
   
     
     /*if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
