@@ -71,16 +71,18 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     
     //Made it so only distance needs to be changed to go foward or backwards.
-    double distance = -60;
+    double distance = 60;
     double speed = 0.15;
     drivetrain.encoderInfo();
     
   if (distance > 0 && drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
-    drivetrain.curvatureDrive(speed, 0);
+    drivetrain.curvatureDrive(-1*speed, 0);
   }
   else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
-    drivetrain.curvatureDrive(-1 * speed, 0);
+    drivetrain.curvatureDrive(-1*speed, 0);
   }
+
+
 
   //FIX THIS DOM
   //YOUR CODE IS DUMB!!!!!
