@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 
@@ -32,6 +33,7 @@ public class Robot extends TimedRobot {
   private CANSparkMax clawWhells = new CANSparkMax(6, MotorType.kBrushless);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
   private RelativeEncoder encoderWhells = clawWhells.getEncoder();
+  private PneumaticHub pcm = new PneumaticHub(10);
 
    // Pneumatics Initialization
    private final Solenoid s1 = new Solenoid(PneumaticsModuleType.REVPH, 0);
@@ -212,7 +214,7 @@ public class Robot extends TimedRobot {
     }
 
     //claw code
-    boolean clawClose = controller0.getAButtonPressed();
+    boolean clawClose = controller0.getAButton();
     if (clawClose) {
       s1.set(true);
       s2.set(true);
