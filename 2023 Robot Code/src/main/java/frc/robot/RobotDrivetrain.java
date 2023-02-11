@@ -27,6 +27,8 @@ public class RobotDrivetrain {
   private CANSparkMax leftRear = new CANSparkMax(1, MotorType.kBrushless);
   private CANSparkMax rightFront = new CANSparkMax(3, MotorType.kBrushless);
   private CANSparkMax rightRear = new CANSparkMax(4, MotorType.kBrushless);
+  private CANSparkMax hDrive = new CANSparkMax(5, MotorType.kBrushless);
+
 
   /*
    * Returns an object for interfacing with the hall sensor integrated into a brushless motor, which is connected to the 
@@ -34,7 +36,7 @@ public class RobotDrivetrain {
   */
   private RelativeEncoder encoderLeft = leftFront.getEncoder();
   private RelativeEncoder encoderRight = rightFront.getEncoder();
-
+  private RelativeEncoder encoderHDrive = hDrive.getEncoder();
 
   
   //Groups left side speed controllers together and right side speed controllers together
@@ -60,6 +62,9 @@ public class RobotDrivetrain {
     robotDrive.arcadeDrive(xSpeed, zRotation);
   }
 
+  public void hDriveMovement(double xSpeed){
+    hDrive.set(xSpeed);
+  }
   //used in Dpad controls and autonomous mode
   //leftSpeed (-1.0 to 1.0) - comes from left stick
   //rightSpeed (-1.0 to 1.0) - comes from right stick
@@ -110,10 +115,13 @@ public class RobotDrivetrain {
     SmartDashboard.putNumber("Encoder Position Right", encoderRight.getPosition());
     SmartDashboard.putNumber("Encoder Velocity Left", encoderLeft.getVelocity());
     SmartDashboard.putNumber("Encoder Velocity Right", encoderRight.getVelocity());
+    SmartDashboard.putNumber("Encoder Velocity H-Drive", encoderHDrive.getVelocity());
+    SmartDashboard.putNumber("Encoder Position H-Drive", encoderHDrive.getPosition());
   }
   public void setEncoderReset(){
     encoderLeft.setPosition(0);
     encoderRight.setPosition(0);
+    encoderHDrive.setPosition(0);
   }
   public double getLeftEncoderPosition(){
     return encoderLeft.getPosition();
@@ -121,7 +129,10 @@ public class RobotDrivetrain {
   public double getRightEncoderPosition(){
     return encoderRight.getPosition();
   }
-  
+
+  public double getHDriveEncoderPosition(){
+    return encoderHDrive.getPosition();
+  }
   /*public void encoderAutonomousStart(){
     setEncoderReset();
   if (getLeftEncoderPosition() <= 62 && getRightEncoderPosition() <= 62){

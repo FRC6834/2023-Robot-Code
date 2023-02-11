@@ -3,11 +3,20 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+import edu.wpi.first.wpilibj.Solenoid;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -16,22 +25,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private RobotDrivetrain drivetrain = new RobotDrivetrain();
   private XboxController controller0 = new XboxController(0);
+  private CANSparkMax armMotor = new CANSparkMax(7, MotorType.kBrushless);
+  private CANSparkMax clawWhells = new CANSparkMax(6, MotorType.kBrushless);
+  private RelativeEncoder encoderArm = armMotor.getEncoder();
+  private RelativeEncoder encoderWhells = clawWhells.getEncoder();
 
+   // Pneumatics Initialization
+   private final Solenoid s1 = new Solenoid(PneumaticsModuleType.REVPH, 0);
+   private final Solenoid s2 = new Solenoid(PneumaticsModuleType.REVPH, 1);
+  
+  
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
   }
 
   /**
@@ -44,6 +56,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {}
 
+ 
+
+  //
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -76,11 +91,12 @@ public class Robot extends TimedRobot {
     drivetrain.encoderInfo();
     
   if (distance > 0 && drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
-    drivetrain.curvatureDrive(-1*speed, 0);
+    drivetrain.curvatureDrive(speed, 0);
   }
   else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
-    drivetrain.curvatureDrive(-1*speed, 0);
+    drivetrain.curvatureDrive(-1 *speed, 0);
   }
+  
 
 
 
@@ -113,11 +129,20 @@ public class Robot extends TimedRobot {
 */
   }
 
+  
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
     drivetrain.setEncoderReset();
+  }
+
+  public double getArmEncoderPosition(){
+    return encoderArm.getPosition();
+  }
+
+  public double getWhellEncoderPosition(){
+    return encoderWhells.getPosition();
   }
 
   /** This function is called periodically during operator control. */
@@ -134,8 +159,13 @@ public class Robot extends TimedRobot {
     //Curvature Drive  
     double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
     double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
+    boolean lSpeed = controller0.getRightBumperPressed(); //right direction from right bumper
+    boolean riSpeed = controller0.getRightBumperPressed(); //left direction from left bumper
     double turn = controller0.getLeftX(); //gets the direction from the left analog stick
     
+    
+      
+    //normal drive
     if (fSpeed > 0){
       drivetrain.curvatureDrive(fSpeed, -1*turn);
     }
@@ -144,14 +174,52 @@ public class Robot extends TimedRobot {
     }
     else{
       drivetrain.curvatureDrive(0,0);
-    }    
+    }
     
+    //h-drive
+    if (lSpeed){
+      drivetrain.hDriveMovement(-0.25);
+    }
+    if (riSpeed){
+      drivetrain.hDriveMovement(0.25);
+    }
+
     //D-Pad controls for fine movements
     int dPad = controller0.getPOV(); //scans to see which directional arrow is being pushed
     drivetrain.dPadGetter(dPad);
-  }
+    
+    /* this function moves the arm up and down, 
+    it has a set limit that needs to be found so we can input it 
+    theses codes are thoughts of possible code for the arm, don't know how to access motor currently
+    so it's just a thought
+    THIS DOES NOT WORK YET!!! BE CAREFUL!!!
+    */
+    
+    //arm code
+    double arm = controller0.getRightY();
+    double upLimit = 0;
+    double downLimit = 0;
+      
+    if (getArmEncoderPosition() < upLimit){
+      if(arm>0){
+        armMotor.set(0.25);
+      }
+    }
+    if (getArmEncoderPosition() > downLimit) {
+      if(arm<0){
+        armMotor.set(-0.25);
+      }
+    }
 
-  /** This function is called once when the robot is disabled. */
+    //claw code
+    boolean clawClose = controller0.getAButtonPressed();
+    if (clawClose) {
+      s1.set(true);
+      s2.set(true);
+    }
+}
+  
+/** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {}
 
@@ -174,4 +242,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  
 }
