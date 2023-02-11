@@ -1,8 +1,5 @@
 package frc.robot;
 
-//Imports
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 /*Must install rev robotics library in order to use SPARK Max speed controllers. 
  *Follow directions on site below.
  *https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information#java-api
@@ -11,6 +8,10 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+
+//Imports
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 

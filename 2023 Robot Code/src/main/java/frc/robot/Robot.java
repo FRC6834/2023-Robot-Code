@@ -4,11 +4,17 @@
 
 package frc.robot;
 
+
+import java.lang.Math;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import edu.wpi.first.wpilibj.SPI;
+import com.kauailabs.navx.frc.AHRS;
+//Imported the navX2
+//https://dev.studica.com/releases/2023/NavX.json = navX library
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -22,7 +28,9 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private RobotDrivetrain drivetrain = new RobotDrivetrain();
   private XboxController controller0 = new XboxController(0);
-
+  //The navX
+  private AHRS navX = new AHRS(SPI.Port.kMXP);
+  private boolean autoBalanceXMode;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -65,13 +73,13 @@ public class Robot extends TimedRobot {
   public double distToRevs(double distance){
     double revolutions = 0.552*distance - 4.41;
     return revolutions;
-
   }
+
   @Override
   public void autonomousPeriodic() {
-    
+    //SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     //Made it so only distance needs to be changed to go foward or backwards.
-    double distance = 60;
+    /*double distance = 60;
     double speed = 0.15;
     drivetrain.encoderInfo();
     
@@ -80,7 +88,15 @@ public class Robot extends TimedRobot {
   }
   else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
     drivetrain.curvatureDrive(-1*speed, 0);
-  }
+  }*/
+  drivetrain.encoderInfo();
+  SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+  double pitchDegrees = navX.getPitch();
+    while (pitchDegrees != 0){
+      double pitchRadians = pitchDegrees * (Math.PI / 180.0);
+      drivetrain.curvatureDrive(Math.sin(pitchRadians) * -1, 0);
+    }
+  
 
 
 
@@ -131,6 +147,7 @@ public class Robot extends TimedRobot {
     //Speeds are currently set at 50%
     //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
     drivetrain.encoderInfo();
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     //Curvature Drive  
     double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
     double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
@@ -174,4 +191,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  //AutoBalance for autonomous period
+  /*public void AutoBalance(double pitchDegrees){
+    pitchDegrees = navX.getPitch();
+    while (pitchDegrees != 0){
+      double pitchRadians = pitchDegrees * (Math.PI / 180.0);
+      drivetrain.curvatureDrive(Math.sin(pitchRadians) * -1, 0);
+    }
+  }*/
 }
