@@ -33,11 +33,10 @@ public class Robot extends TimedRobot {
   private CANSparkMax clawWhells = new CANSparkMax(6, MotorType.kBrushless);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
   private RelativeEncoder encoderWhells = clawWhells.getEncoder();
-  private PneumaticHub pcm = new PneumaticHub(10);
 
    // Pneumatics Initialization
-   private final Solenoid s1 = new Solenoid(PneumaticsModuleType.REVPH, 0);
-   private final Solenoid s2 = new Solenoid(PneumaticsModuleType.REVPH, 1);
+   private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
+   private final Solenoid s2 = new Solenoid(10, PneumaticsModuleType.REVPH, 1);
   
   
   /**
@@ -218,6 +217,10 @@ public class Robot extends TimedRobot {
     if (clawClose) {
       s1.set(true);
       s2.set(true);
+    }
+    else{
+      s1.set(false);
+      s2.set(false);
     }
 }
   
