@@ -31,6 +31,8 @@ public class Robot extends TimedRobot {
   //The navX
   private AHRS navX = new AHRS(SPI.Port.kMXP);
   private boolean autoBalanceXMode;
+  private static final double balanceThreshold = 5;
+  private boolean autoAngle;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -65,6 +67,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     drivetrain.setEncoderReset();
+    navX.zeroYaw();
   }
 
   /** This function is called periodically during autonomous. */
@@ -91,12 +94,10 @@ public class Robot extends TimedRobot {
   }*/
   drivetrain.encoderInfo();
   SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-  double pitchDegrees = navX.getPitch();
-    while (pitchDegrees != 0){
-      double pitchRadians = pitchDegrees * (Math.PI / 180.0);
-      drivetrain.curvatureDrive(Math.sin(pitchRadians) * -1, 0);
-    }
-  
+  SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+  AutoBalance();
+  angleRotation(180);
+
 
 
 
@@ -134,6 +135,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     drivetrain.setEncoderReset();
+    navX.zeroYaw();
   }
 
   /** This function is called periodically during operator control. */
@@ -148,6 +150,7 @@ public class Robot extends TimedRobot {
     //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
     drivetrain.encoderInfo();
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
     //Curvature Drive  
     double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
     double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
@@ -192,12 +195,41 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {}
 
-  //AutoBalance for autonomous period
-  /*public void AutoBalance(double pitchDegrees){
-    pitchDegrees = navX.getPitch();
-    while (pitchDegrees != 0){
-      double pitchRadians = pitchDegrees * (Math.PI / 180.0);
-      drivetrain.curvatureDrive(Math.sin(pitchRadians) * -1, 0);
+  //AutoBalance for autonomous period 
+  //Should make the robot speed slow as it gets closer to equilibrium
+  //It seems to be unable to switch from Teleop to Auto and Back
+  public void AutoBalance(){
+    double pitchDegrees = navX.getPitch();
+    if (!autoBalanceXMode && (Math.abs(pitchDegrees) > Math.abs(balanceThreshold))){
+      autoBalanceXMode = true;
     }
-  }*/
+    if (autoBalanceXMode && (Math.abs(pitchDegrees) <= Math.abs(balanceThreshold))){
+      autoBalanceXMode = false;
+    } 
+    if (autoBalanceXMode){
+      double pitchAngleRadians = pitchDegrees * (Math.PI / 180.0);
+      double balanceSpeed = Math.sin(pitchAngleRadians) * -1; 
+      drivetrain.curvatureDrive(balanceSpeed, 0);
+    }
+  }
+  public void angleRotation(double angle){
+    double yawDegrees = navX.getAngle();
+    double angleSpeed = 0;
+    if (!autoAngle && (yawDegrees < angle)){
+      autoAngle = true;
+    }
+    if (autoAngle && (yawDegrees >= angle)){
+      autoAngle = false;
+    }
+    if(autoAngle){
+      double yawRadians = yawDegrees * (Math.PI / 180.0);
+      if(angle > 90){
+        angleSpeed = 0.5 * (Math.cos(.5*yawRadians) + 0.29);
+      }
+      else if (angle <= 90 ){
+        angleSpeed = 0.5 * (Math.cos(yawRadians) + 0.2);
+      }
+      drivetrain.tankDrive(-angleSpeed, angleSpeed);
+    }
+  }
 }
