@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private RobotDrivetrain drivetrain = new RobotDrivetrain();
   private XboxController controller0 = new XboxController(0);
-  private CANSparkMax armMotor = new CANSparkMax(7, MotorType.kBrushless);
+  private CANSparkMax armMotor = new CANSparkMax(9, MotorType.kBrushless);
   private CANSparkMax clawWhells = new CANSparkMax(6, MotorType.kBrushless);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
   private RelativeEncoder encoderWhells = clawWhells.getEncoder();
@@ -197,20 +197,33 @@ public class Robot extends TimedRobot {
     */
     
     //arm code
-    double arm = controller0.getRightY();
-    double upLimit = 0;
-    double downLimit = 0;
-      
+    boolean armUp = controller0.getYButton();
+    boolean armDown = controller0.getXButton();
+    double upLimit = 50.0;
+    double downLimit = 100.0;
+    SmartDashboard.putNumber("Encoder Position Arm", encoderArm.getPosition());
     if (getArmEncoderPosition() < upLimit){
-      if(arm>0){
-        armMotor.set(0.25);
-      }
-    }
-    if (getArmEncoderPosition() > downLimit) {
-      if(arm<0){
+      if(armUp){
         armMotor.set(-0.25);
       }
+      else {
+        armMotor.set(0);
+      }
     }
+    /*else {
+      armMotor.set(0);
+    }*/
+    if (getArmEncoderPosition() > downLimit) {
+      if(armDown){
+        armMotor.set(0.25);
+      }
+      else {
+        armMotor.set(0);
+      }
+    }/*
+    else {
+      armMotor.set(0);
+    }*/
 
     //claw code
     boolean clawClose = controller0.getAButton();
