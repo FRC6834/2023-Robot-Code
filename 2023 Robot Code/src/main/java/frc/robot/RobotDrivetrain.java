@@ -50,8 +50,8 @@ public class RobotDrivetrain {
   //Constructor is called in Robot.java to create RobotDrivetrain objects.
   //Nothing needs to happen in the constructor for our purposes
   public RobotDrivetrain(){
-    rightFront.setInverted(true);
-    rightRear.setInverted(true);
+    leftFront.setInverted(true);
+    leftRear.setInverted(true);
   }
   
   //Not currently being used
@@ -78,8 +78,6 @@ public class RobotDrivetrain {
   //xSpeed (0 to 1.0) to go forward and (-1.0 to 0) to move backward
   //zRotation (-1.0 to 1.0) controls direction
   public void curvatureDrive(double xSpeed, double zRotation){
-    rightFront.setInverted(true);
-    rightRear.setInverted(true);
     robotDrive.curvatureDrive(xSpeed, zRotation, false);
   }
 
@@ -94,8 +92,6 @@ public class RobotDrivetrain {
   */
 
   public void dPadGetter(int dPad){
-    rightFront.setInverted(true);
-    rightRear.setInverted(true);
     if (dPad==0){
       robotDrive.tankDrive(0.2, 0.2); //forward
     }
@@ -134,25 +130,4 @@ public class RobotDrivetrain {
   public double getHDriveEncoderPosition(){
     return encoderHDrive.getPosition();
   }
-  /*public void encoderAutonomousStart(){
-    setEncoderReset();
-  if (getLeftEncoderPosition() <= 62 && getRightEncoderPosition() <= 62){
-    curvatureDrive(0.15, 0);
-  }
-  else
-    curvatureDrive(0, 0);
-  setEncoderReset();
-  if (getLeftEncoderPosition() >= -20 && getRightEncoderPosition() <= 20){
-  dPadGetter(270);
-  }
-  else
-    curvatureDrive(0,0);
-  setEncoderReset();
-  
-  if (getLeftEncoderPosition() <= 62 && getRightEncoderPosition() <= 62){
-    curvatureDrive(0.15, 0);
-  }
-  else
-    curvatureDrive(0, 0);
-}*/
 }

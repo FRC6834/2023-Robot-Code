@@ -1,36 +1,35 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+//General Imports
 package frc.robot;
-import edu.wpi.first.wpilibj.Solenoid;
+import java.lang.Math;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+//REV Imports
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
-
-
-import java.lang.Math;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.PneumaticHub;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-
-
+//navX Imports: https://dev.studica.com/releases/2023/NavX.json
 import edu.wpi.first.wpilibj.SPI;
 import com.kauailabs.navx.frc.AHRS;
-//Imported the navX2
-//https://dev.studica.com/releases/2023/NavX.json = navX library
+
+//Pneumatic Imports
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+
+//Do we need these???
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.PneumaticHub;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
+
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -45,13 +44,13 @@ public class Robot extends TimedRobot {
   private boolean autoAngle;
 
   private CANSparkMax armMotor = new CANSparkMax(9, MotorType.kBrushless);
-  private CANSparkMax clawWhells = new CANSparkMax(6, MotorType.kBrushless);
+  private CANSparkMax clawWheels = new CANSparkMax(6, MotorType.kBrushless);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
-  private RelativeEncoder encoderWhells = clawWhells.getEncoder();
+  private RelativeEncoder encoderWheels = clawWheels.getEncoder();
 
-   // Pneumatics Initialization
-   private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
-   private final Solenoid s2 = new Solenoid(10, PneumaticsModuleType.REVPH, 1);
+  // Pneumatics Initialization
+  private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
+
   
 
   /**
@@ -109,43 +108,11 @@ public class Robot extends TimedRobot {
   else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
     drivetrain.curvatureDrive(-1*speed, 0);
   }*/
-  drivetrain.encoderInfo();
-  SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-  SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
-  AutoBalance();
-  angleRotation(180);
-
-
-
-
-  //FIX THIS DOM
-  //YOUR CODE IS DUMB!!!!!
-  //BE BETTER
-  //THIS IS WHY I'M STEALING YOUR JOB!
-  /*else{
-      drivetrain.curvatureDrive(0, 0);
-      
-    if (drivetrain.getLeftEncoderPosition() >= -20 && drivetrain.getRightEncoderPosition() <= 20){
-      drivetrain.dPadGetter(270);
-    }
-    else{
-      drivetrain.curvatureDrive(0,0);
-      if (drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
-        drivetrain.curvatureDrive(speed, 0);
-     }
-     else{
-        drivetrain.curvatureDrive(0, 0);
-     }
-    }
-  }*/
-  
-    
-    /*if (drivetrain.getLeftEncoderPosition() <= 62 && drivetrain.getRightEncoderPosition() <= 62){
-	    drivetrain.curvatureDrive(0.15, 0);
-    }
-    else
-	    drivetrain.curvatureDrive(0, 0);
-*/
+    drivetrain.encoderInfo();
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+    AutoBalance();
+    angleRotation(180);
   }
 
 
@@ -161,7 +128,7 @@ public class Robot extends TimedRobot {
   }
 
   public double getWhellEncoderPosition(){
-    return encoderWhells.getPosition();
+    return encoderWheels.getPosition();
   }
 
   /** This function is called periodically during operator control. */
@@ -178,28 +145,31 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
     //Curvature Drive  
-    double fSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
-    double rSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
-    boolean lSpeed = controller0.getRightBumperPressed(); //right direction from right bumper
-    boolean riSpeed = controller0.getRightBumperPressed(); //left direction from left bumper
+    double forwardSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
+    double reverseSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
+    boolean leftSpeed = controller0.getLeftBumper(); //right direction from right bumper
+    boolean rightSpeed = controller0.getRightBumper(); //left direction from left bumper
     double turn = controller0.getLeftX(); //gets the direction from the left analog stick
     
-    if (fSpeed > 0){
-      drivetrain.curvatureDrive(fSpeed, -1*turn);
+    if (forwardSpeed > 0){
+      drivetrain.curvatureDrive(forwardSpeed, -1*turn);
     }
-    else if (rSpeed > 0){
-      drivetrain.curvatureDrive(-1*rSpeed, -1*turn);
+    else if (reverseSpeed > 0){
+      drivetrain.curvatureDrive(-.5*reverseSpeed, -.5*turn);
     }
     else{
       drivetrain.curvatureDrive(0,0);
     }    
     
     //h-drive
-    if (lSpeed){
-      drivetrain.hDriveMovement(-0.25);
+    if (leftSpeed){
+      drivetrain.hDriveMovement(-0.5);
     }
-    if (riSpeed){
-      drivetrain.hDriveMovement(0.25);
+    else if (rightSpeed){
+      drivetrain.hDriveMovement(0.5);
+    }
+    else{
+      drivetrain.hDriveMovement(0);
     }
 
     //D-Pad controls for fine movements
@@ -227,9 +197,6 @@ public class Robot extends TimedRobot {
         armMotor.set(0);
       }
     }
-    /*else {
-      armMotor.set(0);
-    }*/
     if (getArmEncoderPosition() > downLimit) {
       if(armDown){
         armMotor.set(0.25);
@@ -237,20 +204,15 @@ public class Robot extends TimedRobot {
       else {
         armMotor.set(0);
       }
-    }/*
-    else {
-      armMotor.set(0);
-    }*/
+    }
 
     //claw code
     boolean clawClose = controller0.getAButton();
     if (clawClose) {
       s1.set(true);
-      s2.set(true);
     }
     else{
       s1.set(false);
-      s2.set(false);
     }
   }
 
