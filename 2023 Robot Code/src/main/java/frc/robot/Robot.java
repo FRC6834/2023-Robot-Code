@@ -43,10 +43,10 @@ public class Robot extends TimedRobot {
   private static final double balanceThreshold = 5;
   private boolean autoAngle;
 
-  private CANSparkMax armMotor = new CANSparkMax(9, MotorType.kBrushless);
-  private CANSparkMax clawWheels = new CANSparkMax(6, MotorType.kBrushless);
+  private CANSparkMax armMotor = new CANSparkMax(6, MotorType.kBrushless);
+  private CANSparkMax claw = new CANSparkMax(7, MotorType.kBrushed);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
-  private RelativeEncoder encoderWheels = clawWheels.getEncoder();
+  //private RelativeEncoder encoderClaw = claw.getEncoder();
 
   // Pneumatics Initialization
   private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
@@ -126,10 +126,11 @@ public class Robot extends TimedRobot {
   public double getArmEncoderPosition(){
     return encoderArm.getPosition();
   }
-
-  public double getWhellEncoderPosition(){
-    return encoderWheels.getPosition();
+  /*
+  public double getClawEncoderPosition(){
+    return encoderClaw.getPosition();
   }
+  */
 
   /** This function is called periodically during operator control. */
   @Override
@@ -206,9 +207,42 @@ public class Robot extends TimedRobot {
       }
     }
 
-    //claw code
-    boolean clawClose = controller0.getAButton();
-    if (clawClose) {
+    //Electric claw
+    boolean clawOpen = controller0.getAButton();
+    boolean clawClose = controller0.getBButton();
+    double openLimit = 15.0;
+    double closeLimit = 10.0;
+    if(clawOpen){
+      claw.set(0.75);
+    }
+    else if(clawClose){
+      claw.set(-0.75);
+    }
+    else{
+      claw.set(0);
+    }
+
+    /**  if (getClawEncoderPosition() < openLimit){
+      if(clawOpen){
+        claw.set(-0.25);
+      }
+      else {
+        claw.set(0);
+      }
+    }
+    if (getClawEncoderPosition() > closeLimit) {
+      if(clawClose){
+        claw.set(0.25);
+      }
+      else {
+        claw.set(0);
+      }
+    }
+    */
+
+    //pneumaticsclaw code
+    boolean clawPNClose = controller0.getAButton();
+    if (clawPNClose) {
       s1.set(true);
     }
     else{
