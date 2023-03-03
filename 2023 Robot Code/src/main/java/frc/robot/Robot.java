@@ -153,10 +153,10 @@ public class Robot extends TimedRobot {
     double turn = controller0.getLeftX(); //gets the direction from the left analog stick
     
     if (forwardSpeed > 0){
-      drivetrain.curvatureDrive(forwardSpeed, -1*turn);
+      drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
     }
     else if (reverseSpeed > 0){
-      drivetrain.curvatureDrive(-.5*reverseSpeed, -.5*turn);
+      drivetrain.curvatureDrive(-.5*reverseSpeed, -1*turn);
     }
     else{
       drivetrain.curvatureDrive(0,0);
