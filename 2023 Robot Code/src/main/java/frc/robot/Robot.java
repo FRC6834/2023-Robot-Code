@@ -1,6 +1,9 @@
 //General Imports
 package frc.robot;
 import java.lang.Math;
+
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -23,6 +26,9 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.PneumaticHub;
 
+//Timer impoerts
+import edu.wpi.first.wpilibj.Timer;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -43,14 +49,16 @@ public class Robot extends TimedRobot {
   private static final double balanceThreshold = 5;
   private boolean autoAngle;
 
-  private CANSparkMax armMotor = new CANSparkMax(6, MotorType.kBrushless);
-  private CANSparkMax claw = new CANSparkMax(7, MotorType.kBrushed);
+  //Arm and Claw
+  private CANSparkMax armMotor = new CANSparkMax(9, MotorType.kBrushless);
+  private CANSparkMax clawWheels = new CANSparkMax(6, MotorType.kBrushless);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
-  //private RelativeEncoder encoderClaw = claw.getEncoder();
-
+  private RelativeEncoder encoderWheels = clawWheels.getEncoder();
+  //Timer
+  private double startTime;
   // Pneumatics Initialization
   private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
-
+  private double time = Timer.getFPGATimestamp();
   
 
   /**
@@ -84,35 +92,161 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
+    startTime = Timer.getFPGATimestamp();
+    navX.resetDisplacement();
   }
 
   /** This function is called periodically during autonomous. */
-  
-  //Distance in inches to revolutions for neo motor
-  public double distToRevs(double distance){
-    double revolutions = 0.552*distance - 4.41;
-    return revolutions;
-  }
 
   @Override
   public void autonomousPeriodic() {
     //SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     //Made it so only distance needs to be changed to go foward or backwards.
-    /*double distance = 60;
-    double speed = 0.15;
+    //robot info
+    // straight = middle, left = left, right = right
+    boolean straight = true;
+    boolean right = false;
+    boolean left = false;
+    //if H-Drive fails
+    boolean hDriveNotWork = false;
+    //Precondition if we are going to AutoBalance or let our teammates do it
+    boolean ifAutoBalance = false;
+    //Determines if we start with cone or with the cube
+    //True = cone, false = cube
+    boolean coneOrCube = true;
     drivetrain.encoderInfo();
-    
-  if (distance > 0 && drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
-    drivetrain.curvatureDrive(-1*speed, 0);
-  }
-  else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
-    drivetrain.curvatureDrive(-1*speed, 0);
-  }*/
-    drivetrain.encoderInfo();
-    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
-    AutoBalance();
-    angleRotation(180);
+    double x = navX.getDisplacementX();
+    double y = navX.getDisplacementY();
+    robotInfo();
+    // Conversion from in to m is 0.0254
+    double initialX = 10.5 * 0.0254;
+    double initialY = 21.75 * 0.0254;
+    // size of cube
+    double cube = 9.75 * 0.0254;
+    // size of cone
+    double cone = 8.5 * 0.0254;
+    // Auto if we use cone + Straigh ahead
+    if(coneOrCube){
+      while (time - startTime < 15){
+        if (straight){
+          while(x > (initialX + cone)/2){
+            drivetrain.curvatureDrive(-0.01, 0);
+          }
+          while(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
+            drivetrain.curvatureDrive(0.08, 0);
+          }
+          while(x > ((2.16/3) - 1.9/3)){
+            drivetrain.curvatureDrive(-0.03, 0);
+          }
+          if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+        else if(right){
+          if (x > (initialX + cone)/2){
+            drivetrain.curvatureDrive(-0.1, 0);
+          }
+          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
+              drivetrain.curvatureDrive(0.8, 0);
+          }
+          else if(x > ((2.16/3) - 1.9/3)){
+            if (y > -1 * ((1.5 + (2.44/2)) - initialY)){
+              drivetrain.hDriveMovement(1);
+            }
+            else
+              drivetrain.curvatureDrive(-0.3, 0);
+          }
+          else if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+        else if (left){
+          if (x > ((initialX + cone)/2)){
+            drivetrain.curvatureDrive(-0.1, 0);
+          }
+          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
+            drivetrain.curvatureDrive(0.8, 0);
+          }
+          else if(x > ((2.16/3) - 1.9/3)){
+            if (y < initialY + (1.4 + (2.44/2))){
+              drivetrain.hDriveMovement(1);
+            }
+            else
+              drivetrain.curvatureDrive(-0.3, 0);
+          }
+          else if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+      }
+    }
+    // Auto if we use cube + Straigh ahead
+    if (!coneOrCube){
+      while (time - startTime < 15){
+        if (straight){
+          if (x > ((initialX + cube)/2)){
+            drivetrain.curvatureDrive(-0.1, 0);
+          }
+          else if(x < ((1.54 - (cube + initialX))+ 1.9 + (2.16/3))){
+            drivetrain.curvatureDrive(0.8, 0);
+          }
+          else if(x > ((2.16/3) - 1.9/3)){
+            drivetrain.curvatureDrive(-0.5, 0);
+          }
+          else if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+        else if(right){
+          if (x > (initialX + cube)/2){
+            drivetrain.curvatureDrive(-0.1, 0);
+          }
+          else if(x < ((1.54 - (cube + initialX))+ 1.9 + (2.16/3))){
+            drivetrain.curvatureDrive(0.8, 0);
+          }
+          else if(x > ((2.16/3) - 1.9/3)){
+            if (y > -1 * ((1.5 + (2.44/2)) - initialY)){
+              drivetrain.hDriveMovement(1);
+            }
+            else
+              drivetrain.curvatureDrive(-0.3, 0);
+          }
+          else if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+        else if(left){
+          if (x > ((initialX + cone)/2)){
+            drivetrain.curvatureDrive(-0.1, 0);
+          }
+          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
+            drivetrain.curvatureDrive(0.8, 0);
+          }
+          else if(x > ((2.16/3) - 1.9/3)){
+            if (y < initialY + (1.4 + (2.44/2))){
+              drivetrain.hDriveMovement(1);
+            }
+            else
+              drivetrain.curvatureDrive(-0.3, 0);
+          }
+          else if(ifAutoBalance){
+            AutoBalance();
+          }
+          else 
+            drivetrain.curvatureDrive(0,0);
+        }
+      }
+    }
   }
 
 
@@ -121,16 +255,16 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
+    navX.resetDisplacement();
   }
 
   public double getArmEncoderPosition(){
     return encoderArm.getPosition();
   }
-  /*
-  public double getClawEncoderPosition(){
-    return encoderClaw.getPosition();
+
+  public double getWhellEncoderPosition(){
+    return encoderWheels.getPosition();
   }
-  */
 
   /** This function is called periodically during operator control. */
   @Override
@@ -143,8 +277,8 @@ public class Robot extends TimedRobot {
     //Speeds are currently set at 50%
     //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
     drivetrain.encoderInfo();
-    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+    //Information for Pitch, Yaw, Speed, and Position
+    robotInfo();
     //Curvature Drive  
     double forwardSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
     double reverseSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
@@ -153,10 +287,10 @@ public class Robot extends TimedRobot {
     double turn = controller0.getLeftX(); //gets the direction from the left analog stick
     
     if (forwardSpeed > 0){
-      drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
+      drivetrain.curvatureDrive(forwardSpeed, -1*turn);
     }
     else if (reverseSpeed > 0){
-      drivetrain.curvatureDrive(-.5*reverseSpeed, -1*turn);
+      drivetrain.curvatureDrive(-.5*reverseSpeed, -.5*turn);
     }
     else{
       drivetrain.curvatureDrive(0,0);
@@ -207,42 +341,9 @@ public class Robot extends TimedRobot {
       }
     }
 
-    //Electric claw
-    boolean clawOpen = controller0.getAButton();
-    boolean clawClose = controller0.getBButton();
-    double openLimit = 15.0;
-    double closeLimit = 10.0;
-    if(clawOpen){
-      claw.set(0.75);
-    }
-    else if(clawClose){
-      claw.set(-0.75);
-    }
-    else{
-      claw.set(0);
-    }
-
-    /**  if (getClawEncoderPosition() < openLimit){
-      if(clawOpen){
-        claw.set(-0.25);
-      }
-      else {
-        claw.set(0);
-      }
-    }
-    if (getClawEncoderPosition() > closeLimit) {
-      if(clawClose){
-        claw.set(0.25);
-      }
-      else {
-        claw.set(0);
-      }
-    }
-    */
-
-    //pneumaticsclaw code
-    boolean clawPNClose = controller0.getAButton();
-    if (clawPNClose) {
+    //claw code
+    boolean clawClose = controller0.getAButton();
+    if (clawClose) {
       s1.set(true);
     }
     else{
@@ -311,5 +412,13 @@ public class Robot extends TimedRobot {
       }
       drivetrain.tankDrive(-angleSpeed, angleSpeed);
     }
+  }
+  public void robotInfo(){
+    SmartDashboard.putNumber("Time", time);
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+    SmartDashboard.putNumber("Velocity", navX.getVelocityX());
+    SmartDashboard.putNumber("X Displacement", navX.getDisplacementX());
+    SmartDashboard.putNumber("Y Displacement", navX.getDisplacementY());
   }
 }
