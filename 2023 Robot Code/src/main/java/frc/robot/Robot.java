@@ -93,160 +93,88 @@ public class Robot extends TimedRobot {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
     startTime = Timer.getFPGATimestamp();
-    navX.resetDisplacement();
+    drivetrain.encoderInfo();
+    robotInfo();
   }
 
   /** This function is called periodically during autonomous. */
 
   @Override
-  public void autonomousPeriodic() {
-    //SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-    //Made it so only distance needs to be changed to go foward or backwards.
-    //robot info
-    // straight = middle, left = left, right = right
+  public void autonomousPeriodic(){
+
+    boolean HDriveworks = true;
+
+    boolean areWeAutoBalance = false;
+
     boolean straight = true;
-    boolean right = false;
-    boolean left = false;
-    //if H-Drive fails
-    boolean hDriveNotWork = false;
-    //Precondition if we are going to AutoBalance or let our teammates do it
-    boolean ifAutoBalance = false;
-    //Determines if we start with cone or with the cube
-    //True = cone, false = cube
-    boolean coneOrCube = true;
+    boolean right = true;
+    boolean left = true;
     drivetrain.encoderInfo();
-    double x = navX.getDisplacementX();
-    double y = navX.getDisplacementY();
     robotInfo();
-    // Conversion from in to m is 0.0254
-    double initialX = 10.5 * 0.0254;
-    double initialY = 21.75 * 0.0254;
-    // size of cube
-    double cube = 9.75 * 0.0254;
-    // size of cone
-    double cone = 8.5 * 0.0254;
-    // Auto if we use cone + Straigh ahead
-    if(coneOrCube){
-      while (time - startTime < 15){
-        if (straight){
-          while(x > (initialX + cone)/2){
-            drivetrain.curvatureDrive(-0.01, 0);
-          }
-          while(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
-            drivetrain.curvatureDrive(0.08, 0);
-          }
-          while(x > ((2.16/3) - 1.9/3)){
-            drivetrain.curvatureDrive(-0.03, 0);
-          }
-          if(ifAutoBalance){
-            AutoBalance();
-          }
-          else 
-            drivetrain.curvatureDrive(0,0);
+    drivetrain.encoderInfo();
+    while(time - startTime < 15){
+      if (straight){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
+          drivetrain.curvatureDrive(-0.05, 0);
         }
-        else if(right){
-          if (x > (initialX + cone)/2){
-            drivetrain.curvatureDrive(-0.1, 0);
-          }
-          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
-              drivetrain.curvatureDrive(0.8, 0);
-          }
-          else if(x > ((2.16/3) - 1.9/3)){
-            if (y > -1 * ((1.5 + (2.44/2)) - initialY)){
-              drivetrain.hDriveMovement(1);
-            }
-            else
-              drivetrain.curvatureDrive(-0.3, 0);
-          }
-          else if(ifAutoBalance){
-            AutoBalance();
-          }
-          else 
-            drivetrain.curvatureDrive(0,0);
+        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+          drivetrain.curvatureDrive(0.15, 0);
         }
-        else if (left){
-          if (x > ((initialX + cone)/2)){
-            drivetrain.curvatureDrive(-0.1, 0);
-          }
-          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
-            drivetrain.curvatureDrive(0.8, 0);
-          }
-          else if(x > ((2.16/3) - 1.9/3)){
-            if (y < initialY + (1.4 + (2.44/2))){
-              drivetrain.hDriveMovement(1);
+        else if(drivetrain.getLeftEncoderPosition() > distToRevs((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))){
+          drivetrain.curvatureDrive(-0.15, 0);
+        }
+        else if(areWeAutoBalance){
+          AutoBalance();
+        }
+        else 
+          drivetrain.curvatureDrive(0,0);
+      }
+      else if(right){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
+          drivetrain.curvatureDrive(-0.05, 0);
+        }
+        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+          drivetrain.curvatureDrive(0.15, 0);
+        }
+        if (HDriveworks){
+
+        }
+        else{
+
+        }
+      }
+      else if(left){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
+          drivetrain.curvatureDrive(-0.05, 0);
+        }
+        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+          drivetrain.curvatureDrive(0.15, 0);
+        }
+        if (HDriveworks){
+          
+        }
+        else{
+          if(areWeAutoBalance){
+            angleRotation(90);
+            if(drivetrain.getLeftEncoderPosition() < distToRevs(86.39)){
+              drivetrain.curvatureDrive(distToRevs(0.15), 0);
             }
-            else
-              drivetrain.curvatureDrive(-0.3, 0);
-          }
-          else if(ifAutoBalance){
+            angleRotation(90);
+            if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
+              drivetrain.curvatureDrive(0.15, 0);
+            }
             AutoBalance();
           }
-          else 
+          else
             drivetrain.curvatureDrive(0,0);
         }
       }
+      else 
+        drivetrain.curvatureDrive(0,0);
     }
-    // Auto if we use cube + Straigh ahead
-    if (!coneOrCube){
-      while (time - startTime < 15){
-        if (straight){
-          if (x > ((initialX + cube)/2)){
-            drivetrain.curvatureDrive(-0.1, 0);
-          }
-          else if(x < ((1.54 - (cube + initialX))+ 1.9 + (2.16/3))){
-            drivetrain.curvatureDrive(0.8, 0);
-          }
-          else if(x > ((2.16/3) - 1.9/3)){
-            drivetrain.curvatureDrive(-0.5, 0);
-          }
-          else if(ifAutoBalance){
-            AutoBalance();
-          }
-          else 
-            drivetrain.curvatureDrive(0,0);
-        }
-        else if(right){
-          if (x > (initialX + cube)/2){
-            drivetrain.curvatureDrive(-0.1, 0);
-          }
-          else if(x < ((1.54 - (cube + initialX))+ 1.9 + (2.16/3))){
-            drivetrain.curvatureDrive(0.8, 0);
-          }
-          else if(x > ((2.16/3) - 1.9/3)){
-            if (y > -1 * ((1.5 + (2.44/2)) - initialY)){
-              drivetrain.hDriveMovement(1);
-            }
-            else
-              drivetrain.curvatureDrive(-0.3, 0);
-          }
-          else if(ifAutoBalance){
-            AutoBalance();
-          }
-          else 
-            drivetrain.curvatureDrive(0,0);
-        }
-        else if(left){
-          if (x > ((initialX + cone)/2)){
-            drivetrain.curvatureDrive(-0.1, 0);
-          }
-          else if(x < ((1.54 - (cone + initialX))+ 1.9 + (2.16/3))){
-            drivetrain.curvatureDrive(0.8, 0);
-          }
-          else if(x > ((2.16/3) - 1.9/3)){
-            if (y < initialY + (1.4 + (2.44/2))){
-              drivetrain.hDriveMovement(1);
-            }
-            else
-              drivetrain.curvatureDrive(-0.3, 0);
-          }
-          else if(ifAutoBalance){
-            AutoBalance();
-          }
-          else 
-            drivetrain.curvatureDrive(0,0);
-        }
-      }
-    }
+
+
+
   }
 
 
@@ -417,8 +345,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Time", time);
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
-    SmartDashboard.putNumber("Velocity", navX.getVelocityX());
-    SmartDashboard.putNumber("X Displacement", navX.getDisplacementX());
-    SmartDashboard.putNumber("Y Displacement", navX.getDisplacementY());
   }
+
+  public double distToRevs(double distance){
+    double revolutions = 0.552*distance - 4.41;
+    return revolutions;
+  }
+  
 }
