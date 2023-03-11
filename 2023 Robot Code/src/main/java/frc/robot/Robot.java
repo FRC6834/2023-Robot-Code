@@ -29,6 +29,10 @@ import edu.wpi.first.wpilibj.PneumaticHub;
 //Timer impoerts
 import edu.wpi.first.wpilibj.Timer;
 
+
+//carmera imports
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.TimedRobot;
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -66,7 +70,9 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    CameraServer.startAutomaticCapture();
+  }
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
