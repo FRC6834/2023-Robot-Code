@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 //navX Imports: https://dev.studica.com/releases/2023/NavX.json
 import edu.wpi.first.wpilibj.SPI;
@@ -23,6 +24,10 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.PneumaticHub;
 
+//Camera imports
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.TimedRobot;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -31,6 +36,10 @@ import edu.wpi.first.wpilibj.PneumaticHub;
  */
 
 public class Robot extends TimedRobot {
+  
+  
+  
+  
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
@@ -58,7 +67,11 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    //armMotor.setIdleMode(IdleMode.kBrake);
+    armMotor.setInverted(true);
+    CameraServer.startAutomaticCapture();
+  }
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -146,11 +159,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
     //Curvature Drive  
-    double forwardSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
-    double reverseSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
+    double forwardSpeed = controller0.getLeftTriggerAxis(); //forward speed from right trigger
+    double reverseSpeed = controller0.getRightTriggerAxis(); //reverse speed from left trigger
     boolean leftSpeed = controller0.getLeftBumper(); //right direction from right bumper
     boolean rightSpeed = controller0.getRightBumper(); //left direction from left bumper
-    double turn = controller0.getLeftX(); //gets the direction from the left analog stick
+    double turn = -1*controller0.getLeftX(); //gets the direction from the left analog stick
     
     if (forwardSpeed > 0){
       drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
@@ -190,7 +203,20 @@ public class Robot extends TimedRobot {
     double upLimit = 50.0;
     double downLimit = 100.0;
     SmartDashboard.putNumber("Encoder Position Arm", encoderArm.getPosition());
+    
+    if(armUp){
+      armMotor.set(.3);
+    }
+    else if(armDown){
+      armMotor.set(-.2);
+    }
+    else{
+      armMotor.set(0);
+    }
+
+    /*
     if (getArmEncoderPosition() < upLimit){
+
       if(armUp){
         armMotor.set(-0.25);
       }
@@ -206,6 +232,8 @@ public class Robot extends TimedRobot {
         armMotor.set(0);
       }
     }
+    */
+
 
     //Electric claw
     boolean clawOpen = controller0.getAButton();
@@ -213,32 +241,14 @@ public class Robot extends TimedRobot {
     double openLimit = 15.0;
     double closeLimit = 10.0;
     if(clawOpen){
-      claw.set(0.75);
+      claw.set(1);
     }
     else if(clawClose){
-      claw.set(-0.75);
+      claw.set(-1);
     }
     else{
       claw.set(0);
     }
-
-    /**  if (getClawEncoderPosition() < openLimit){
-      if(clawOpen){
-        claw.set(-0.25);
-      }
-      else {
-        claw.set(0);
-      }
-    }
-    if (getClawEncoderPosition() > closeLimit) {
-      if(clawClose){
-        claw.set(0.25);
-      }
-      else {
-        claw.set(0);
-      }
-    }
-    */
 
     //pneumaticsclaw code
     boolean clawPNClose = controller0.getAButton();
