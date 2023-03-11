@@ -1,9 +1,6 @@
 //General Imports
 package frc.robot;
 import java.lang.Math;
-
-import javax.lang.model.util.ElementScanner14;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -13,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 //navX Imports: https://dev.studica.com/releases/2023/NavX.json
 import edu.wpi.first.wpilibj.SPI;
@@ -26,8 +24,9 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.PneumaticHub;
 
-//Timer impoerts
-import edu.wpi.first.wpilibj.Timer;
+//Camera imports
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.TimedRobot;
 
 
 //carmera imports
@@ -41,6 +40,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 
 public class Robot extends TimedRobot {
+  
+  
+  
+  
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
@@ -53,16 +56,14 @@ public class Robot extends TimedRobot {
   private static final double balanceThreshold = 5;
   private boolean autoAngle;
 
-  //Arm and Claw
-  private CANSparkMax armMotor = new CANSparkMax(9, MotorType.kBrushless);
-  private CANSparkMax clawWheels = new CANSparkMax(6, MotorType.kBrushless);
+  private CANSparkMax armMotor = new CANSparkMax(6, MotorType.kBrushless);
+  private CANSparkMax claw = new CANSparkMax(7, MotorType.kBrushed);
   private RelativeEncoder encoderArm = armMotor.getEncoder();
-  private RelativeEncoder encoderWheels = clawWheels.getEncoder();
-  //Timer
-  private double startTime;
+  //private RelativeEncoder encoderClaw = claw.getEncoder();
+
   // Pneumatics Initialization
   private final Solenoid s1 = new Solenoid(10, PneumaticsModuleType.REVPH, 0);
-  private double time = Timer.getFPGATimestamp();
+
   
 
   /**
@@ -71,6 +72,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+<<<<<<< HEAD
+=======
+    //armMotor.setIdleMode(IdleMode.kBrake);
+    armMotor.setInverted(true);
+>>>>>>> 3245f5ef700dddf7f9c8f432856394f641cee649
     CameraServer.startAutomaticCapture();
   }
 
@@ -98,89 +104,35 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
-    startTime = Timer.getFPGATimestamp();
-    drivetrain.encoderInfo();
-    robotInfo();
   }
 
   /** This function is called periodically during autonomous. */
+  
+  //Distance in inches to revolutions for neo motor
+  public double distToRevs(double distance){
+    double revolutions = 0.552*distance - 4.41;
+    return revolutions;
+  }
 
   @Override
-  public void autonomousPeriodic(){
-
-    boolean HDriveworks = true;
-
-    boolean areWeAutoBalance = false;
-
-    boolean straight = true;
-    boolean right = true;
-    boolean left = true;
+  public void autonomousPeriodic() {
+    //SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    //Made it so only distance needs to be changed to go foward or backwards.
+    /*double distance = 60;
+    double speed = 0.15;
     drivetrain.encoderInfo();
-    robotInfo();
+    
+  if (distance > 0 && drivetrain.getLeftEncoderPosition() <= distToRevs(distance)){
+    drivetrain.curvatureDrive(-1*speed, 0);
+  }
+  else if(distance < 0 && drivetrain.getLeftEncoderPosition() >= distToRevs(distance)){
+    drivetrain.curvatureDrive(-1*speed, 0);
+  }*/
     drivetrain.encoderInfo();
-    while(time - startTime < 15){
-      if (straight){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
-          drivetrain.curvatureDrive(-0.05, 0);
-        }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
-        }
-        else if(drivetrain.getLeftEncoderPosition() > distToRevs((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))){
-          drivetrain.curvatureDrive(-0.15, 0);
-        }
-        else if(areWeAutoBalance){
-          AutoBalance();
-        }
-        else 
-          drivetrain.curvatureDrive(0,0);
-      }
-      else if(right){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
-          drivetrain.curvatureDrive(-0.05, 0);
-        }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
-        }
-        if (HDriveworks){
-
-        }
-        else{
-
-        }
-      }
-      else if(left){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
-          drivetrain.curvatureDrive(-0.05, 0);
-        }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
-        }
-        if (HDriveworks){
-          
-        }
-        else{
-          if(areWeAutoBalance){
-            angleRotation(90);
-            if(drivetrain.getLeftEncoderPosition() < distToRevs(86.39)){
-              drivetrain.curvatureDrive(distToRevs(0.15), 0);
-            }
-            angleRotation(90);
-            if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
-              drivetrain.curvatureDrive(0.15, 0);
-            }
-            AutoBalance();
-          }
-          else
-            drivetrain.curvatureDrive(0,0);
-        }
-      }
-      else 
-        drivetrain.curvatureDrive(0,0);
-    }
-
-
-
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+    AutoBalance();
+    angleRotation(180);
   }
 
 
@@ -189,16 +141,16 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
-    navX.resetDisplacement();
   }
 
   public double getArmEncoderPosition(){
     return encoderArm.getPosition();
   }
-
-  public double getWhellEncoderPosition(){
-    return encoderWheels.getPosition();
+  /*
+  public double getClawEncoderPosition(){
+    return encoderClaw.getPosition();
   }
+  */
 
   /** This function is called periodically during operator control. */
   @Override
@@ -211,20 +163,20 @@ public class Robot extends TimedRobot {
     //Speeds are currently set at 50%
     //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
     drivetrain.encoderInfo();
-    //Information for Pitch, Yaw, Speed, and Position
-    robotInfo();
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
     //Curvature Drive  
-    double forwardSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
-    double reverseSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
+    double forwardSpeed = controller0.getLeftTriggerAxis(); //forward speed from right trigger
+    double reverseSpeed = controller0.getRightTriggerAxis(); //reverse speed from left trigger
     boolean leftSpeed = controller0.getLeftBumper(); //right direction from right bumper
     boolean rightSpeed = controller0.getRightBumper(); //left direction from left bumper
-    double turn = controller0.getLeftX(); //gets the direction from the left analog stick
+    double turn = -1*controller0.getLeftX(); //gets the direction from the left analog stick
     
     if (forwardSpeed > 0){
-      drivetrain.curvatureDrive(forwardSpeed, -1*turn);
+      drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
     }
     else if (reverseSpeed > 0){
-      drivetrain.curvatureDrive(-.5*reverseSpeed, -.5*turn);
+      drivetrain.curvatureDrive(-.5*reverseSpeed, -1*turn);
     }
     else{
       drivetrain.curvatureDrive(0,0);
@@ -258,7 +210,20 @@ public class Robot extends TimedRobot {
     double upLimit = 50.0;
     double downLimit = 100.0;
     SmartDashboard.putNumber("Encoder Position Arm", encoderArm.getPosition());
+    
+    if(armUp){
+      armMotor.set(.3);
+    }
+    else if(armDown){
+      armMotor.set(-.2);
+    }
+    else{
+      armMotor.set(0);
+    }
+
+    /*
     if (getArmEncoderPosition() < upLimit){
+
       if(armUp){
         armMotor.set(-0.25);
       }
@@ -274,10 +239,27 @@ public class Robot extends TimedRobot {
         armMotor.set(0);
       }
     }
+    */
 
-    //claw code
-    boolean clawClose = controller0.getAButton();
-    if (clawClose) {
+
+    //Electric claw
+    boolean clawOpen = controller0.getAButton();
+    boolean clawClose = controller0.getBButton();
+    double openLimit = 15.0;
+    double closeLimit = 10.0;
+    if(clawOpen){
+      claw.set(1);
+    }
+    else if(clawClose){
+      claw.set(-1);
+    }
+    else{
+      claw.set(0);
+    }
+
+    //pneumaticsclaw code
+    boolean clawPNClose = controller0.getAButton();
+    if (clawPNClose) {
       s1.set(true);
     }
     else{
@@ -347,15 +329,4 @@ public class Robot extends TimedRobot {
       drivetrain.tankDrive(-angleSpeed, angleSpeed);
     }
   }
-  public void robotInfo(){
-    SmartDashboard.putNumber("Time", time);
-    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
-  }
-
-  public double distToRevs(double distance){
-    double revolutions = 0.552*distance - 4.41;
-    return revolutions;
-  }
-  
 }
