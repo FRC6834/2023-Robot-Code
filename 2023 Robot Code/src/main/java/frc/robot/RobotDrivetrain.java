@@ -93,16 +93,16 @@ public class RobotDrivetrain {
 
   public void dPadGetter(int dPad){
     if (dPad==0){
-      robotDrive.tankDrive(0.3, 0.3); //forward
+      robotDrive.tankDrive(0.4, 0.4); //forward
     }
     if (dPad==90){
-      robotDrive.tankDrive(0.3, -0.3); //right
+      robotDrive.tankDrive(0.4, -0.4); //right
     }
     if (dPad==180){
-      robotDrive.tankDrive(-0.3, -0.3); //reverse
+      robotDrive.tankDrive(-0.4, -0.4); //reverse
     }
     if (dPad==270){
-      robotDrive.tankDrive(-0.3, 0.3); //left
+      robotDrive.tankDrive(-0.4, 0.4); //left
     }
   } 
   

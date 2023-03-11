@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     CameraServer.startAutomaticCapture();
     armMotor.setIdleMode(IdleMode.kBrake);
+    armMotor.setInverted(false);
   }
 
   /**
@@ -245,10 +246,10 @@ public class Robot extends TimedRobot {
     double turn = controller0.getLeftX(); //gets the direction from the left analog stick
     
     if (forwardSpeed > 0){
-      drivetrain.curvatureDrive(forwardSpeed, -1*turn);
+      drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
     }
     else if (reverseSpeed > 0){
-      drivetrain.curvatureDrive(-.5*reverseSpeed, -.5*turn);
+      drivetrain.curvatureDrive(-.3*reverseSpeed, -.5*turn);
     }
     else{
       drivetrain.curvatureDrive(0,0);
@@ -280,10 +281,10 @@ public class Robot extends TimedRobot {
     boolean armDown = controller0.getXButton(); 
     SmartDashboard.putNumber("Encoder Position Arm", encoderArm.getPosition());
     if(armUp){
-      armMotor.set(0.25);    
+      armMotor.set(0.6);    
     }
     else if(armDown) {
-      armMotor.set(-.25);
+      armMotor.set(-.6);
     }
     else {
       armMotor.set(0);
