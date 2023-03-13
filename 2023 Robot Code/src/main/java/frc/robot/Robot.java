@@ -291,21 +291,32 @@ public class Robot extends TimedRobot {
     }
 
     //claw code
-    boolean clawClose = controller0.getAButton();
-    boolean clawDown = controller0.getBButton();
-    if (clawClose) {
+    boolean clawOpen = controller1.getAButton();
+    boolean clawDown = controller1.getXButton();
+    boolean clawUp = controller1.getYButton();
+
+    if (clawOpen) {
       claw.set(true);
     }
     else{
       claw.set(false);
     }
-    
+
+    if(clawDown){
+      clawDeploy.set(true);
+    }
+    if(clawUp){
+      clawDeploy.set(false);
+    }
+
+    /*
     if(clawDown){
       clawDeploy.set(true);
     }
     else{
       clawDeploy.set(false);
     }
+    */
     
 
 
