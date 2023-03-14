@@ -1,10 +1,8 @@
 //General Imports
 package frc.robot;
 import java.lang.Math;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //REV Imports
@@ -24,24 +22,15 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 //Timer Imports
 import edu.wpi.first.wpilibj.Timer;
 
-
-//camera imports
+//Camera Imports
 import edu.wpi.first.cameraserver.CameraServer;
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private RobotDrivetrain drivetrain = new RobotDrivetrain();
   private XboxController controller0 = new XboxController(0);
   private XboxController controller1 = new XboxController(1);
+  
   //The navX
   private AHRS navX = new AHRS(SPI.Port.kMXP);
   private boolean autoBalanceXMode;
@@ -50,7 +39,6 @@ public class Robot extends TimedRobot {
 
   //Arm
   private CANSparkMax armMotor = new CANSparkMax(6, MotorType.kBrushless);
-  
   private RelativeEncoder encoderArm = armMotor.getEncoder();
 
   //Claw
@@ -62,12 +50,8 @@ public class Robot extends TimedRobot {
   private double time = Timer.getFPGATimestamp();
 
 
-
-
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //This function is run when the robot is first started up and should be used for any initialization code.
   @Override
   public void robotInit() {
     CameraServer.startAutomaticCapture();
@@ -75,36 +59,21 @@ public class Robot extends TimedRobot {
     armMotor.setInverted(false);
   }
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //This function is called every 20 ms, no matter the mode.
   @Override
   public void robotPeriodic() {}
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @Override
   public void autonomousInit() {
     drivetrain.setEncoderReset();
     navX.zeroYaw();
     drivetrain.encoderInfo();
-    robotInfo();
+    robotAttitude();
   }
 
-  /** This function is called periodically during autonomous. */
-
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @Override
   public void autonomousPeriodic(){
     claw.set(true);//close
@@ -118,7 +87,7 @@ public class Robot extends TimedRobot {
     boolean right = true;
     boolean left = true;
     drivetrain.encoderInfo();
-    robotInfo();
+    robotAttitude();
     drivetrain.encoderInfo();
     while(time - startTime < 15){
       if (straight){
@@ -213,7 +182,7 @@ public class Robot extends TimedRobot {
   }
 
 
-  /** This function is called once when teleop is enabled. */
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @Override
   public void teleopInit() {
     drivetrain.setEncoderReset();
@@ -221,29 +190,25 @@ public class Robot extends TimedRobot {
     navX.resetDisplacement();
   }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   public double getArmEncoderPosition(){
     return encoderArm.getPosition();
   }
 
-  /** This function is called periodically during operator control. */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @Override
   public void teleopPeriodic() {
-    //D-pad functionality works regardless of drive type chosen
-    
-    //Tank Drive
-    //Need y-axis for each stick
-    //Hand.kLeft gives the left analog stick and Hand.kRight gives the right analog stick
-    //Speeds are currently set at 50%
-    //drivetrain.tankDrive(-0.5*controller.getLeftY(), -0.5*controller.getRightY()); 
     drivetrain.encoderInfo();
+    
     //Information for Pitch, Yaw, Speed, and Position
-    robotInfo();
+    robotAttitude();
+    
     //Curvature Drive  
-    double forwardSpeed = controller0.getRightTriggerAxis(); //forward speed from right trigger
-    double reverseSpeed = controller0.getLeftTriggerAxis(); //reverse speed from left trigger
-    boolean leftSpeed = controller0.getLeftBumper(); //right direction H-Drive
-    boolean rightSpeed = controller0.getRightBumper(); //left direction H-Drive
-    double turn = controller0.getLeftX(); //gets the direction from the left analog stick
+    double forwardSpeed = controller0.getRightTriggerAxis();
+    double reverseSpeed = controller0.getLeftTriggerAxis();
+    boolean leftSpeed = controller0.getLeftBumper(); //H-Drive
+    boolean rightSpeed = controller0.getRightBumper(); //H-Drive
+    double turn = controller0.getLeftX();
     
     if (forwardSpeed > 0){
       drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
@@ -255,7 +220,7 @@ public class Robot extends TimedRobot {
       drivetrain.curvatureDrive(0,0);
     }    
     
-    //h-drive
+    //H-Drive
     if (leftSpeed){
       drivetrain.hDriveMovement(-0.5);
     }
@@ -269,6 +234,7 @@ public class Robot extends TimedRobot {
     //D-Pad controls for fine movements
     int dPad = controller0.getPOV(); //scans to see which directional arrow is being pushed
     drivetrain.dPadGetter(dPad);
+
     /* this function moves the arm up and down, 
     it has a set limit that needs to be found so we can input it 
     theses codes are thoughts of possible code for the arm, don't know how to access motor currently
@@ -276,10 +242,11 @@ public class Robot extends TimedRobot {
     THIS DOES NOT WORK YET!!! BE CAREFUL!!!
     */
     
-    //arm code
-    boolean armUp = controller0.getYButton(); 
-    boolean armDown = controller0.getXButton(); 
+    //Arm Code
+    boolean armUp = controller1.getRightBumper();
+    boolean armDown = controller1.getLeftBumper();
     SmartDashboard.putNumber("Encoder Position Arm", encoderArm.getPosition());
+    
     if(armUp){
       armMotor.set(0.6);    
     }
@@ -290,7 +257,7 @@ public class Robot extends TimedRobot {
       armMotor.set(0);
     }
 
-    //claw code
+    //Claw Code
     boolean clawOpen = controller1.getAButton();
     boolean clawDown = controller1.getXButton();
     boolean clawUp = controller1.getYButton();
@@ -307,37 +274,61 @@ public class Robot extends TimedRobot {
     }
     if(clawUp){
       clawDeploy.set(false);
+    } 
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  public void AutoBalance(){
+    double pitchDegrees = navX.getPitch();
+    if (!autoBalanceXMode && (Math.abs(pitchDegrees) > Math.abs(balanceThreshold))){
+      autoBalanceXMode = true;
     }
-
-    /*
-    if(clawDown){
-      clawDeploy.set(true);
+    if (autoBalanceXMode && (Math.abs(pitchDegrees) <= Math.abs(balanceThreshold))){
+      autoBalanceXMode = false;
+    } 
+    if (autoBalanceXMode){
+      double pitchAngleRadians = pitchDegrees * (Math.PI / 180.0);
+      double balanceSpeed = Math.sin(pitchAngleRadians) * -1; 
+      drivetrain.curvatureDrive(balanceSpeed, 0);
     }
-    else{
-      clawDeploy.set(false);
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  public void angleRotation(double angle){
+    double yawDegrees = navX.getAngle();
+    double angleSpeed = 0;
+    if (!autoAngle && (yawDegrees < angle)){
+      autoAngle = true;
     }
-    */
-    
-
-
-    boolean topNode = controller1.getYButton(); 
-    boolean midNode = controller1.getXButton(); 
-    boolean bottemNode = controller1.getAButton(); 
-
-    if(topNode){
-
+    if (autoAngle && (yawDegrees >= angle)){
+      autoAngle = false;
     }
-   
-    if(midNode){
-
-    }
-
-    if(bottemNode){
-
+    if(autoAngle){
+      double yawRadians = yawDegrees * (Math.PI / 180.0);
+      if(angle > 90){
+        angleSpeed = 0.5 * (Math.cos(.5*yawRadians) + 0.29);
+      }
+      else if (angle <= 90 ){
+        angleSpeed = 0.5 * (Math.cos(yawRadians) + 0.2);
+      }
+      drivetrain.tankDrive(-angleSpeed, angleSpeed);
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  public void robotAttitude(){
+    SmartDashboard.putNumber("Time", time);
+    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
+    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
+  }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  public double distToRevs(double distance){
+    double revolutions = 0.552*distance - 4.41;
+    return revolutions;
+  }
+
+  ////////////////////////////////////////////////   NOT BEING USED   //////////////////////////////////////////////////////
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {}
@@ -360,55 +351,5 @@ public class Robot extends TimedRobot {
 //pilk is good
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
-
-  //AutoBalance for autonomous period 
-  //Should make the robot speed slow as it gets closer to equilibrium
-  //It seems to be unable to switch from Teleop to Auto and Back
-  public void AutoBalance(){
-    double pitchDegrees = navX.getPitch();
-    if (!autoBalanceXMode && (Math.abs(pitchDegrees) > Math.abs(balanceThreshold))){
-      autoBalanceXMode = true;
-    }
-    if (autoBalanceXMode && (Math.abs(pitchDegrees) <= Math.abs(balanceThreshold))){
-      autoBalanceXMode = false;
-    } 
-    if (autoBalanceXMode){
-      double pitchAngleRadians = pitchDegrees * (Math.PI / 180.0);
-      double balanceSpeed = Math.sin(pitchAngleRadians) * -1; 
-      drivetrain.curvatureDrive(balanceSpeed, 0);
-    }
-  }
-  
-  public void angleRotation(double angle){
-    double yawDegrees = navX.getAngle();
-    double angleSpeed = 0;
-    if (!autoAngle && (yawDegrees < angle)){
-      autoAngle = true;
-    }
-    if (autoAngle && (yawDegrees >= angle)){
-      autoAngle = false;
-    }
-    if(autoAngle){
-      double yawRadians = yawDegrees * (Math.PI / 180.0);
-      if(angle > 90){
-        angleSpeed = 0.5 * (Math.cos(.5*yawRadians) + 0.29);
-      }
-      else if (angle <= 90 ){
-        angleSpeed = 0.5 * (Math.cos(yawRadians) + 0.2);
-      }
-      drivetrain.tankDrive(-angleSpeed, angleSpeed);
-    }
-  }
-  public void robotInfo(){
-    SmartDashboard.putNumber("Time", time);
-    SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
-    SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
-  }
-
-  public double distToRevs(double distance){
-    double revolutions = 0.552*distance - 4.41;
-    return revolutions;
-  }
-  
+  public void simulationPeriodic() {}  
 }
