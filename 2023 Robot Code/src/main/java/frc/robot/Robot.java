@@ -79,6 +79,9 @@ public class Robot extends TimedRobot {
     claw.set(true);//close
     claw.set(false);//open
     armMotor.set(0.25);
+
+    double time = Timer.getFPGATimestamp();
+
     boolean HDriveworks = true;
 
     boolean areWeAutoBalance = false;
@@ -88,97 +91,146 @@ public class Robot extends TimedRobot {
     boolean left = true;
     drivetrain.encoderInfo();
     robotAttitude();
-    drivetrain.encoderInfo();
-    while(time - startTime < 15){
-      if (straight){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
+    if (straight){
+      if(time - startTime < 2){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
           drivetrain.curvatureDrive(-0.05, 0);
         }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+      }
+      else if (time - startTime < 5){
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
           drivetrain.curvatureDrive(0.15, 0);
         }
-        else if(drivetrain.getLeftEncoderPosition() > distToRevs((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))){
+      }
+      else if (time - startTime < 9){
+        if(drivetrain.getLeftEncoderPosition() > distToRevs((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))){
           drivetrain.curvatureDrive(-0.15, 0);
         }
-        else if(areWeAutoBalance){
+      }
+      else if(time - startTime < 15){
+        if(areWeAutoBalance){
           AutoBalance();
         }
-        else 
+        else  
           drivetrain.curvatureDrive(0,0);
       }
-      else if(right){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
+    }
+    else if(right){
+      if(time - startTime < 2){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
           drivetrain.curvatureDrive(-0.05, 0);
         }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+      }
+      else if (time - startTime < 5){
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
           drivetrain.curvatureDrive(0.15, 0);
         }
-        if (HDriveworks){
-          if(areWeAutoBalance){
+      }
+      else{
+        if(HDriveworks){
+          if (time - startTime < 8){
             if(drivetrain.getHDriveEncoderPosition() > distToRevs(-114.095)){
               drivetrain.hDriveMovement(-1);
             }
-            else if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
+          }
+          else if(time - startTime < 11){
+            if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
               drivetrain.curvatureDrive(-0.15, 0);
             }
           }
-          else
-            drivetrain.curvatureDrive(0, 0);
+          else if(time - startTime < 15){
+            if(areWeAutoBalance){
+              AutoBalance();
+            }
+            else
+              drivetrain.curvatureDrive(0, 0);
+          }
         }
         else{
-          if(areWeAutoBalance){
+          if(time - startTime < 8){
             angleRotation(270);
             if(drivetrain.getLeftEncoderPosition() < distToRevs(86.39)){
               drivetrain.curvatureDrive(distToRevs(0.15), 0);
             }
+          }
+          else if(time - startTime < 11){
             angleRotation(270);
             if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
               drivetrain.curvatureDrive(0.15, 0);
             }
-            AutoBalance();
           }
-          else
-            drivetrain.curvatureDrive(0,0);
+          else if(time - startTime < 15){
+            if (areWeAutoBalance){
+              AutoBalance();
+            }
+            else
+              drivetrain.curvatureDrive(0,0);
+          }
         }
       }
-      else if(left){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(1)){
-          drivetrain.curvatureDrive(-0.05, 0);
+    }
+    else if(left){
+      if(time - startTime < 2){
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
+        drivetrain.curvatureDrive(-0.05, 0);
         }
-        else if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
+      }
+      else if(time - startTime < 5){
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
+        drivetrain.curvatureDrive(0.15, 0);
         }
+      }
+      else{
         if (HDriveworks){
-          if(areWeAutoBalance){
+          if (time - startTime < 8){
             if(drivetrain.getHDriveEncoderPosition() < distToRevs(86.39)){
               drivetrain.hDriveMovement(1);
             }
-            else if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
+          }
+          else if(time - startTime < 11){
+            if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
               drivetrain.curvatureDrive(-0.15, 0);
             }
+          }
+          else if(time - startTime < 15){
+            if(areWeAutoBalance){
+              AutoBalance();
+            }
+            else
+              drivetrain.curvatureDrive(0,0);
           }
           else
             drivetrain.curvatureDrive(0, 0);
         }
         else{
-          if(areWeAutoBalance){
+          if(time - startTime < 7){
             angleRotation(90);
+          }
+          else if(time -startTime < 9){
             if(drivetrain.getLeftEncoderPosition() < distToRevs(86.39)){
               drivetrain.curvatureDrive(distToRevs(0.15), 0);
             }
+          }
+          else if (time - startTime < 12){
             angleRotation(90);
             if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
               drivetrain.curvatureDrive(0.15, 0);
             }
-            AutoBalance();
+          }
+          else if(time - startTime < 15){
+            if(areWeAutoBalance){
+              AutoBalance();
+            }
+            else
+              drivetrain.curvatureDrive(0,0);
           }
           else
             drivetrain.curvatureDrive(0,0);
         }
       }
-      else 
-        drivetrain.curvatureDrive(0,0);
     }
+    else 
+      drivetrain.curvatureDrive(0,0);
   }
 
 
@@ -209,6 +261,7 @@ public class Robot extends TimedRobot {
     boolean leftSpeed = controller0.getLeftBumper(); //H-Drive
     boolean rightSpeed = controller0.getRightBumper(); //H-Drive
     double turn = controller0.getLeftX();
+    boolean autoBalance = controller0.getAButton();
     
     if (forwardSpeed > 0){
       drivetrain.curvatureDrive(.5*forwardSpeed, -1*turn);
@@ -275,6 +328,11 @@ public class Robot extends TimedRobot {
     if(clawUp){
       clawDeploy.set(false);
     } 
+
+    // when drive team wants to auto balance
+    if(autoBalance){
+      AutoBalance();
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
