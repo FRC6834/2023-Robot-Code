@@ -1,6 +1,8 @@
 //General Imports
 package frc.robot;
 import java.lang.Math;
+import java.sql.Time;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -81,7 +83,7 @@ public class Robot extends TimedRobot {
     //armMotor.set(0.25);
 
     double time = Timer.getFPGATimestamp();
-
+    SmartDashboard.putNumber("Time", time);
     boolean HDriveworks = true;
 
     boolean areWeAutoBalance = true;
@@ -94,21 +96,21 @@ public class Robot extends TimedRobot {
     if (straight){
       if(time - startTime < 3){
         clawDeploy.set(false);
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
-          drivetrain.curvatureDrive(0.05, 0);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(10)){
+          drivetrain.curvatureDrive(0.15, 0);
         }
         claw.set(true);
       }
       else if (time - startTime < 6){
         claw.set(false);
         clawDeploy.set(true);
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(137.865 + (85.13/3)))){
-          drivetrain.curvatureDrive(-0.15, 0);
+        if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(137.865 + (85.13/3)))){
+          drivetrain.curvatureDrive(-0.65, 0);
         }
       }
       else if (time - startTime < 8){
-        if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))))){
-          drivetrain.curvatureDrive(0.15, 0);
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(((137.865 + (85.13/3))) + ((85.13/3) + (76.125/2))))){
+          drivetrain.curvatureDrive(0.65, 0);
         }
       }
       else if(time - startTime < 15){
@@ -119,18 +121,19 @@ public class Robot extends TimedRobot {
           drivetrain.curvatureDrive(0,0);
       }
     }
-    else if(right){
+    /**else if(right){
       if(time - startTime < 3){
         clawDeploy.set(false);
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
-          drivetrain.curvatureDrive(0.05, 0);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(10)){
+          drivetrain.curvatureDrive(0.15, 0);
         }
-        claw.set(false);
+        claw.set(true);
       }
       else if (time - startTime < 6){
+        claw.set(false);
         clawDeploy.set(true);
         if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(137.865 + (85.13/3)))){
-          drivetrain.curvatureDrive(-0.15, 0);
+          drivetrain.curvatureDrive(-0.65, 0);
         }
       }
       else{
@@ -179,15 +182,16 @@ public class Robot extends TimedRobot {
     else if(left){
       if(time - startTime < 3){
         clawDeploy.set(false);
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
-          drivetrain.curvatureDrive(0.05, 0);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(10)){
+          drivetrain.curvatureDrive(0.15, 0);
         }
-        claw.set(false);
+        claw.set(true);
       }
       else if (time - startTime < 6){
+        claw.set(false);
         clawDeploy.set(true);
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(137.865 + (85.13/3)))){
-          drivetrain.curvatureDrive(-0.15, 0);
+        if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(137.865 + (85.13/3)))){
+          drivetrain.curvatureDrive(-0.65, 0);
         }
       }
       else{
@@ -238,7 +242,7 @@ public class Robot extends TimedRobot {
             drivetrain.curvatureDrive(0,0);
         }
       }
-    }
+    }**/
     else 
       drivetrain.curvatureDrive(0,0);
   }
@@ -385,9 +389,7 @@ public class Robot extends TimedRobot {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   public void robotAttitude(){
-    double time = Timer.getFPGATimestamp();
-    startTime = Timer.getFPGATimestamp();
-    SmartDashboard.putNumber("Time", time - startTime);
+    SmartDashboard.putNumber("Time", startTime);
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
   }
