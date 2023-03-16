@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
   //The navX
   private AHRS navX = new AHRS(SPI.Port.kMXP);
   private boolean autoBalanceXMode;
-  private static final double balanceThreshold = 5;
+  private static final double balanceThreshold = -1;
   private boolean autoAngle;
 
   //Arm
@@ -47,7 +47,6 @@ public class Robot extends TimedRobot {
 
   //Timer
   private double startTime;
-  private double time = Timer.getFPGATimestamp();
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,35 +75,39 @@ public class Robot extends TimedRobot {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @Override
   public void autonomousPeriodic(){
-    claw.set(true);//close
-    claw.set(false);//open
-    armMotor.set(0.25);
+    //claw.set(true);//close
+    //claw.set(false);//open
+    //armMotor.set(0.25);
 
     double time = Timer.getFPGATimestamp();
 
     boolean HDriveworks = true;
 
-    boolean areWeAutoBalance = false;
+    boolean areWeAutoBalance = true;
 
     boolean straight = true;
-    boolean right = true;
-    boolean left = true;
+    boolean right = false;
+    boolean left = false;
     drivetrain.encoderInfo();
     robotAttitude();
     if (straight){
-      if(time - startTime < 2){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
-          drivetrain.curvatureDrive(-0.05, 0);
+      if(time - startTime < 3){
+        clawDeploy.set(false);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
+          drivetrain.curvatureDrive(0.05, 0);
         }
+        claw.set(true);
       }
-      else if (time - startTime < 5){
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
-        }
-      }
-      else if (time - startTime < 9){
-        if(drivetrain.getLeftEncoderPosition() > distToRevs((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))){
+      else if (time - startTime < 6){
+        claw.set(false);
+        clawDeploy.set(true);
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(137.865 + (85.13/3)))){
           drivetrain.curvatureDrive(-0.15, 0);
+        }
+      }
+      else if (time - startTime < 8){
+        if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(((137.865 + (85.13/3)) - ((85.13/3) + (76.125/2)))))){
+          drivetrain.curvatureDrive(0.15, 0);
         }
       }
       else if(time - startTime < 15){
@@ -116,14 +119,17 @@ public class Robot extends TimedRobot {
       }
     }
     else if(right){
-      if(time - startTime < 2){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
-          drivetrain.curvatureDrive(-0.05, 0);
+      if(time - startTime < 3){
+        clawDeploy.set(false);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
+          drivetrain.curvatureDrive(0.05, 0);
         }
+        claw.set(false);
       }
-      else if (time - startTime < 5){
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-          drivetrain.curvatureDrive(0.15, 0);
+      else if (time - startTime < 6){
+        clawDeploy.set(true);
+        if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(137.865 + (85.13/3)))){
+          drivetrain.curvatureDrive(-0.15, 0);
         }
       }
       else{
@@ -170,26 +176,29 @@ public class Robot extends TimedRobot {
       }
     }
     else if(left){
-      if(time - startTime < 2){
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(-5)){
-        drivetrain.curvatureDrive(-0.05, 0);
+      if(time - startTime < 3){
+        clawDeploy.set(false);
+        if (drivetrain.getLeftEncoderPosition() > distToRevs(5)){
+          drivetrain.curvatureDrive(0.05, 0);
         }
+        claw.set(false);
       }
-      else if(time - startTime < 5){
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(137.865 + (85.13/3))){
-        drivetrain.curvatureDrive(0.15, 0);
+      else if (time - startTime < 6){
+        clawDeploy.set(true);
+        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(137.865 + (85.13/3)))){
+          drivetrain.curvatureDrive(-0.15, 0);
         }
       }
       else{
         if (HDriveworks){
           if (time - startTime < 8){
             if(drivetrain.getHDriveEncoderPosition() < distToRevs(86.39)){
-              drivetrain.hDriveMovement(1);
+              drivetrain.hDriveMovement(-0.5);
             }
           }
           else if(time - startTime < 11){
-            if(drivetrain.getLeftEncoderPosition() < distToRevs(53.752)){
-              drivetrain.curvatureDrive(-0.15, 0);
+            if(drivetrain.getLeftEncoderPosition() < distToRevs(-53.752)){
+              drivetrain.curvatureDrive(0.15, 0);
             }
           }
           else if(time - startTime < 15){
@@ -204,7 +213,7 @@ public class Robot extends TimedRobot {
         }
         else{
           if(time - startTime < 7){
-            angleRotation(90);
+            angleRotation(2);
           }
           else if(time -startTime < 9){
             if(drivetrain.getLeftEncoderPosition() < distToRevs(86.39)){
@@ -323,10 +332,10 @@ public class Robot extends TimedRobot {
     }
 
     if(clawDown){
-      clawDeploy.set(true);
+      clawDeploy.set(false);
     }
     if(clawUp){
-      clawDeploy.set(false);
+      clawDeploy.set(true);
     } 
 
     // when drive team wants to auto balance
@@ -375,7 +384,9 @@ public class Robot extends TimedRobot {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   public void robotAttitude(){
-    SmartDashboard.putNumber("Time", time);
+    double time = Timer.getFPGATimestamp();
+    startTime = Timer.getFPGATimestamp();
+    SmartDashboard.putNumber("Time", time - startTime);
     SmartDashboard.putNumber("Pitch Angle", navX.getPitch());
     SmartDashboard.putNumber("Yaw Angle", navX.getAngle());
   }
