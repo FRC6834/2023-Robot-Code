@@ -79,6 +79,8 @@ public class RobotDrivetrain {
   //zRotation (-1.0 to 1.0) controls direction
   public void curvatureDrive(double xSpeed, double zRotation){
     robotDrive.curvatureDrive(xSpeed, zRotation, false);
+    //encoderLeft.setPositionConversionFactor(Math.PI/90);
+    //encoderRight.setPositionConversionFactor(Math.PI/90);
   }
 
   /*
@@ -121,6 +123,7 @@ public class RobotDrivetrain {
     encoderHDrive.setPosition(0);
   }
   public double getLeftEncoderPosition(){
+    
     return encoderLeft.getPosition();
   }
   public double getRightEncoderPosition(){

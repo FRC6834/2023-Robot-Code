@@ -36,7 +36,8 @@ public class Robot extends TimedRobot {
   //The navX
   private AHRS navX = new AHRS(SPI.Port.kMXP);
   private boolean autoBalanceXMode;
-  private static final double balanceThreshold = -1;
+  private static final double kOffBalanceAngleThresholdDegrees = 2;
+  private static final double kOonBalanceAngleThresholdDegrees  = 0;
   private boolean autoAngle;
 
   //Arm
@@ -94,23 +95,23 @@ public class Robot extends TimedRobot {
     drivetrain.encoderInfo();
     robotAttitude();
     if (straight){
-      if(time - startTime < 3){
-        clawDeploy.set(false);
-        if (drivetrain.getLeftEncoderPosition() > distToRevs(10)){
-          drivetrain.curvatureDrive(0.15, 0);
-        }
-        claw.set(true);
-      }
-      else if (time - startTime < 6){
-        claw.set(false);
+      if(time - startTime < 2){
         clawDeploy.set(true);
+        if (drivetrain.getLeftEncoderPosition() < distToRevs(7)){
+          drivetrain.curvatureDrive(0.25, 0);
+          claw.set(true);
+        }
+      }
+      else if (time - startTime < 5){
+        claw.set(false);
+        clawDeploy.set(false);
         if(drivetrain.getLeftEncoderPosition() > distToRevs(-1*(137.865 + (85.13/3)))){
-          drivetrain.curvatureDrive(-0.65, 0);
+          drivetrain.curvatureDrive(-0.35, 0);
         }
       }
       else if (time - startTime < 8){
-        if(drivetrain.getLeftEncoderPosition() < distToRevs(-1*(((137.865 + (85.13/3))) + ((85.13/3) + (76.125/2))))){
-          drivetrain.curvatureDrive(0.65, 0);
+        if(drivetrain.getLeftEncoderPosition() < distToRevs((-1*(137.865 + (85.13/3))) + ((85.13/3) + (76.125/2)))){
+          drivetrain.curvatureDrive(0.45, 0);
         }
       }
       else if(time - startTime < 15){
@@ -351,18 +352,17 @@ public class Robot extends TimedRobot {
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   public void AutoBalance(){
-    double pitchDegrees = navX.getPitch();
-    if (!autoBalanceXMode && (Math.abs(pitchDegrees) > Math.abs(balanceThreshold))){
+    double pitchAngleDegrees = navX.getPitch();
+    if ( !autoBalanceXMode && (Math.abs(pitchAngleDegrees) >= Math.abs(kOffBalanceAngleThresholdDegrees))){
       autoBalanceXMode = true;
     }
-    if (autoBalanceXMode && (Math.abs(pitchDegrees) <= Math.abs(balanceThreshold))){
+    else if ( autoBalanceXMode && (Math.abs(pitchAngleDegrees) <= Math.abs(kOonBalanceAngleThresholdDegrees))){
       autoBalanceXMode = false;
-    } 
-    if (autoBalanceXMode){
-      double pitchAngleRadians = pitchDegrees * (Math.PI / 180.0);
-      double balanceSpeed = Math.sin(pitchAngleRadians) * -1; 
-      drivetrain.curvatureDrive(balanceSpeed, 0);
     }
+    if ( autoBalanceXMode ){
+      double pitchAngleRadians = pitchAngleDegrees * (Math.PI / 180.0);
+      drivetrain.curvatureDrive(Math.sin(pitchAngleRadians) * -1,0);
+    } 
   }
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -380,7 +380,7 @@ public class Robot extends TimedRobot {
       if(angle > 90){
         angleSpeed = 0.5 * (Math.cos(.5*yawRadians) + 0.29);
       }
-      else if (angle <= 90 ){
+      else {
         angleSpeed = 0.5 * (Math.cos(yawRadians) + 0.2);
       }
       drivetrain.tankDrive(-angleSpeed, angleSpeed);
